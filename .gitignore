@@ -1,1 +1,8 @@
 build/
+
+grammar/*.cpp
+grammar/*.h
+grammar/*.tokens
+grammar/*.interp
+
+*.now

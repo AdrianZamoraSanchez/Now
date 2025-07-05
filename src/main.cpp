@@ -36,9 +36,16 @@ int main(){
 	NowLexer lexer(&input);
 	CommonTokenStream tokens(&lexer);
 
+	tokens.fill();
+	for (auto token : tokens.getTokens()) {
+	    std::cout << token->toString() << std::endl;
+	}	
+
 	NowParser parser(&tokens);
-	tree::ParseTree *tree = parser.prog();
+	
+	NowParser::ProgContext* tree = parser.prog();
 
 	std::cout << tree->toStringTree(&parser) << std::endl;
+	
 	return 0;
 }
