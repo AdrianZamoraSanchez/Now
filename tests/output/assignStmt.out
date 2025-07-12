@@ -1,0 +1,1 @@
+(program (stmt (assign variable = (operand otherVariable) ;)) (stmt (assign variable = (operand (literal 2)) ;)) (stmt (assign variable = (operand (literal "string")) ;)) (stmt (assign variable = (operand (expr (expr 2) + (expr 3))) ;)))

@@ -1,0 +1,7 @@
+variable = otherVariable ;
+
+variable = 2;
+
+variable = "string";
+
+variable = 2 + 3;

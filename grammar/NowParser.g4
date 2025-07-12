@@ -4,7 +4,7 @@ options {
   tokenVocab = NowLexer;
 }
 
-prog: stmt* ;
+program: stmt* ;
 
 stmt: conditionalExpr 
 	| timedBlock 

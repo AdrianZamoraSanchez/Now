@@ -25,8 +25,8 @@ target_link_libraries(NowCompiler antlr4-runtime)
 # LLVM
 find_package(LLVM REQUIRED CONFIG)
 
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+#message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+#message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
@@ -60,7 +60,7 @@ target_include_directories(NowTests PRIVATE
     /usr/local/include/antlr4-runtime
 )
 
-# Enlazar con GTest y tu librería
+# Enlazar todos los tests y librerías
 target_link_libraries(NowTests
     gtest
     gtest_main
@@ -69,5 +69,6 @@ target_link_libraries(NowTests
     LLVMSupport
 )
 
-# Agregar las pruebas
-add_test(NAME NowCompilerStmtTest COMMAND NowTests)
+# Se ejecutan todos los tests definidos con GTest
+include(GoogleTest)
+gtest_discover_tests(NowTests)

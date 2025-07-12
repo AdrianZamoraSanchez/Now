@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 
 	NowParser parser(&tokens);
 	
-	NowParser::ProgContext* tree = parser.prog();
+	NowParser::ProgramContext* tree = parser.program();
 
 	std::cout << tree->toStringTree(&parser) << std::endl;
 	

@@ -14,6 +14,6 @@ make
 #clear
 
 # Tests
-./NowTests
+ctest
 cd ..
 

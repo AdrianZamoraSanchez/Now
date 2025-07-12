@@ -5,5 +5,3 @@ grammar/*.h
 grammar/*.tokens
 grammar/*.interp
 Testing/*
-
-*.now

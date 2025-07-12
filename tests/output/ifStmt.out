@@ -1,1 +1,1 @@
-(prog (stmt (conditionalExpr if ( (comparison (operand (literal 2)) (comparationOperator <) (operand (literal 3))) ) { (stmt (declaration (type int) number = (operand (literal 3)) ;)) })))
+(program (stmt (conditionalExpr if ( (comparison (operand (literal 2)) (comparationOperator <) (operand (literal 3))) ) { (stmt (declaration (type int) number = (operand (literal 3)) ;)) })))

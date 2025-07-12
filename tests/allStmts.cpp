@@ -1,13 +1,33 @@
 /* Tests for general statements */
 #include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <list>
+#include <gtest/gtest.h>
 #include "antlr4-runtime.h"
 #include "NowLexer.h"
 #include "NowParser.h"
-#include "ios"
-#include <list>
-#include <gtest/gtest.h>
 
 using namespace antlr4;
+
+class MyErrorListener : public BaseErrorListener {
+public:
+    bool errorFound = false;
+
+    void syntaxError(Recognizer *recognizer,
+                     Token *offendingSymbol,
+                     size_t line,
+                     size_t charPositionInLine,
+                     const std::string &msg,
+                     std::exception_ptr e) override {
+        errorFound = true;
+    }
+
+    bool hasErrors() const {
+        return errorFound;
+    }
+};
 
 void runTests(std::string fileName){
 	std::string line;
@@ -65,14 +85,29 @@ void runTests(std::string fileName){
     */
 
     NowParser parser(&tokens);
+    parser.removeErrorListeners(); // Remove default error listener
 
-    NowParser::ProgContext* tree = parser.prog();
+	// Adding simple error listener
+    MyErrorListener errorListener;
+    parser.addErrorListener(&errorListener);
+
+    NowParser::ProgramContext* tree = parser.program();
 
     std::string actualOutput = tree->toStringTree(&parser);
 
-   	ASSERT_EQ(actualOutput, expectedOutput);	
+   	ASSERT_EQ(actualOutput, expectedOutput);
+   	ASSERT_FALSE(errorListener.hasErrors());	
 }
 
-TEST(NowCompilerStmtTest, ifStmt){
-    	runTests("ifStmt");
-    }
+TEST(NowCompilerStmtTest, timeBlockStmt){ runTests("timeBlockStmt"); }
+
+TEST(NowCompilerStmtTest, assignStmt){ runTests("assignStmt"); }
+
+TEST(NowCompilerStmtTest, declarationStmt){ runTests("declarationStmt"); }
+
+TEST(NowCompilerStmtTest, ifStmt){ runTests("ifStmt"); }
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
