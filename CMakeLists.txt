@@ -36,3 +36,38 @@ target_link_libraries(NowCompiler
         LLVMCore
         LLVMSupport
 )
+
+# Unit tests
+enable_testing()
+
+# Buscar todos los archivos .cpp en la carpeta tests
+file(GLOB TEST_SOURCES
+    ${PROJECT_SOURCE_DIR}/tests/*.cpp
+)
+
+set(GRAMMAR_SOURCES
+    ${PROJECT_SOURCE_DIR}/grammar/NowLexer.cpp
+    ${PROJECT_SOURCE_DIR}/grammar/NowParser.cpp
+)
+
+
+# Los añade como ejecutables
+add_executable(NowTests ${TEST_SOURCES} ${GRAMMAR_SOURCES})
+
+# Incluir headers del proyecto en los tests
+target_include_directories(NowTests PRIVATE
+    ${PROJECT_SOURCE_DIR}/grammar
+    /usr/local/include/antlr4-runtime
+)
+
+# Enlazar con GTest y tu librería
+target_link_libraries(NowTests
+    gtest
+    gtest_main
+    antlr4-runtime
+    LLVMCore
+    LLVMSupport
+)
+
+# Agregar las pruebas
+add_test(NAME NowCompilerStmtTest COMMAND NowTests)

@@ -11,11 +11,11 @@ Main file
 
 using namespace antlr4;
 
-int main(){
+int main(int argc, char *argv[]){
 	std::string line;
 	std::string fileText = "";
 
-	std::ifstream testFile ("../input.now");
+	std::ifstream testFile(argv[1]);
 
 	if (testFile.is_open()) {
 	  while (getline (testFile,line)) {

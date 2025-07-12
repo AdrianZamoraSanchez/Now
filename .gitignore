@@ -4,5 +4,6 @@ grammar/*.cpp
 grammar/*.h
 grammar/*.tokens
 grammar/*.interp
+Testing/*
 
 *.now

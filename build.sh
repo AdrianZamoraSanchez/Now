@@ -11,8 +11,9 @@ rm *.*
 cmake ..
 make
 
-clear
+#clear
 
-# Test
-./NowCompiler
+# Tests
+./NowTests
 cd ..
+
