@@ -6,25 +6,24 @@ options {
 
 program: stmt* ;
 
-stmt: conditionalExpr 
-	| timedBlock 
-	| declaration
-	| assign
+stmt: conditional	 	# stmtConditional
+	| timeBlock 		# stmtTimeBlock
+	| declaration		# stmtDeclaration
+	| assign			# stmtAssign
 	;
 
-timedBlock
+timeBlock
   : timeStamp LBRACE stmt* RBRACE
   ;
 
 timeStamp
-  : NUMBER_LITERAL MS
-  | NUMBER_LITERAL SEC
-  | NUMBER_LITERAL MIN
-  | NUMBER_LITERAL HR
+  : NUMBER_LITERAL MS	# msTimeStamp
+  | NUMBER_LITERAL SEC	# secTimeStamp
+  | NUMBER_LITERAL MIN 	# minTimeStamp
+  | NUMBER_LITERAL HR	# hrTimeStamp
   ;
 
-conditionalExpr: IF LPAREN comparison RPAREN LBRACE stmt* RBRACE
-    		   ;  
+conditional: IF LPAREN comparison RPAREN LBRACE stmt* RBRACE ;  
 
 comparison: operand comparationOperator operand ;
 
@@ -37,31 +36,31 @@ comparationOperator: EQ_OP
 				   ;
 
 operand
-    : literal
-    | IDENTIFIER
-    | expr
+    : literal		# opLiteral
+    | IDENTIFIER	# opIdentifier
+    | expr			# opExpr
     ;
 
 expr
-  : expr (MUL|DIV) expr
-  | expr (PLUS|MINUS) expr
-  | NUMBER_LITERAL
-  | LPAREN expr RPAREN
+  : expr (MUL|DIV) expr		# mulDivExpr
+  | expr (PLUS|MINUS) expr	# addSubExpr
+  | NUMBER_LITERAL			# numExpr
+  | LPAREN expr RPAREN		# parenExpr
   ;
 
 booleanLiteral : TRUE | FALSE ;
 
-literal: NUMBER_LITERAL
-	   | FLOAT_LITERAL
-	   | STRING_LITERAL
-	   | CHAR_LITERAL
-	   | booleanLiteral
+literal: NUMBER_LITERAL		# literalNumber
+	   | FLOAT_LITERAL		# literalFloat
+	   | STRING_LITERAL		# literalString
+	   | CHAR_LITERAL		# literalChar
+	   | booleanLiteral		# literalBool
 	   ;
 
 type: INT | FLOAT | STRING | CHAR | BOOLEAN ;
 
-declaration: type IDENTIFIER SEMICOLON
-		   | type IDENTIFIER ASSING_OP operand SEMICOLON
+declaration: type IDENTIFIER SEMICOLON						# declarationSimple
+		   | type IDENTIFIER ASSING_OP operand SEMICOLON	# declarationAssing
 		   ;
 
 assign: IDENTIFIER ASSING_OP operand SEMICOLON ;

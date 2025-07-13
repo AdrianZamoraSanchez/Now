@@ -15,6 +15,7 @@ link_directories(/usr/local/lib)
 # Archivos fuente
 add_executable(NowCompiler
     src/main.cpp
+    src/ASTBuilderVisitor.cpp
     grammar/NowLexer.cpp
     grammar/NowParser.cpp
 )

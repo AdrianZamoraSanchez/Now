@@ -1,1 +1,1 @@
-(program (stmt (timedBlock (timeStamp 2 sec) { (stmt (declaration (type int) number = (operand (literal 2)) ;)) })))
+(program (stmt (timeBlock (timeStamp 2 sec) { (stmt (declaration (type int) number = (operand (literal 2)) ;)) })))

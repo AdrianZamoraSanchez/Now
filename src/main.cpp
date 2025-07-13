@@ -8,6 +8,7 @@ Main file
 #include "NowLexer.h"
 #include "NowParser.h"
 #include "ios"
+#include "ASTBuilderVisitor.cpp"
 
 using namespace antlr4;
 
