@@ -1,14 +1,13 @@
-/* Compiler file */
 #include <iostream>
-#include "antlr4-runtime.h"
-#include "NowLexer.h"
-#include "NowParser.h"
-#include "ios"
-#include "ASTBuilderVisitor.h"
+#include <vector>
+#include "../src/ASTBuilderVisitor.cpp"
+#include "../grammar/NowParser.h"
+#include "../grammar/NowParserBaseVisitor.h"
+#include "../grammar/NowLexer.h"
 
 using namespace antlr4;
 
-int main(int argc, char *argv[]){
+int main(int argc, char** argv){
 	std::string line;
 	std::string fileText = "";
 
@@ -31,18 +30,22 @@ int main(int argc, char *argv[]){
 
 	ANTLRInputStream input(fileText);
 	NowLexer lexer(&input);
-	CommonTokenStream tokens(&lexer);
-
-	tokens.fill();
-	for (auto token : tokens.getTokens()) {
-	    std::cout << token->toString() << std::endl;
-	}	
+	CommonTokenStream tokens(&lexer); 
 
 	NowParser parser(&tokens);
 	
 	NowParser::ProgramContext* tree = parser.program();
 
-	std::cout << tree->toStringTree(&parser) << std::endl;
+	ASTBuilderVisitor visitor;
+
+	std::vector<std::unique_ptr<ASTNode>> nodes;
+
+    nodes = visitor.buildTree(tree);
+
+    for(const auto& node : nodes){
+    	node->printNode();
+    }
 	
 	return 0;
 }
+

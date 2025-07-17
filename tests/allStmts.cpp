@@ -8,6 +8,7 @@
 #include "antlr4-runtime.h"
 #include "NowLexer.h"
 #include "NowParser.h"
+#include "../src/ASTBuilderVisitor.h"
 
 using namespace antlr4;
 
