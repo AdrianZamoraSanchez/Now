@@ -47,7 +47,7 @@ public:
         : id(id), operand(std::move(op)) {}
 
     void printNode(){
-	   	std::cout << "Nodo ASSIGN" << std::endl;
+	   	std::cout << "Nodo ASSIGN: " << id << std::endl;
 
 	   	if(operand){
 	   		std::cout << "Nodo operand: ";
@@ -79,14 +79,25 @@ public:
     }
 };
 
-class LiteralNode : public ASTNode {
+class IntLiteralNode : public ASTNode {
+public:
+    int value;
+    
+    IntLiteralNode(const int val) : value(val) {}
+
+    void printNode(){
+	   	std::cout << "Nodo INT LITERAL: " << value << std::endl;
+    }
+};
+
+class StringLiteralNode : public ASTNode {
 public:
     std::string value;
     
-    LiteralNode(const std::string& val) : value(val) {}
+    StringLiteralNode(const std::string& val) : value(val) {}
 
     void printNode(){
-	   	std::cout << "Nodo LITERAL: " << value << std::endl;
+	   	std::cout << "Nodo STRING LITERAL: " << value << std::endl;
     }
 };
 

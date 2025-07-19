@@ -42,8 +42,8 @@ operand
     ;
 
 expr
-  : expr (MUL|DIV) expr		# mulDivExpr
-  | expr (PLUS|MINUS) expr	# addSubExpr
+  : expr op=(MUL|DIV) expr		# mulDivExpr
+  | expr op=(PLUS|MINUS) expr	# addSubExpr
   | NUMBER_LITERAL			# numExpr
   | LPAREN expr RPAREN		# parenExpr
   ;

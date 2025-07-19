@@ -10,10 +10,15 @@ public:
     std::unique_ptr<ASTNode> visitProgram(NowParser::ProgramContext* ctx);
     std::unique_ptr<ASTNode> visitAssign(NowParser::AssignContext* ctx);
     std::unique_ptr<ASTNode> visitOperand(NowParser::OperandContext* ctx);
+	
+	std::unique_ptr<ASTNode> visitExpr(NowParser::OpExprContext* ctx);
+	std::unique_ptr<ASTNode> visitOpExpr(NowParser::ExprContext* ctx);
+	
+	std::unique_ptr<ASTNode> visitOpLiteral(NowParser::OpLiteralContext* ctx);
+    std::unique_ptr<ASTNode> visitOpIdentifier(NowParser::OpIdentifierContext* ctx);
+    
     std::unique_ptr<ASTNode> visitConditional(NowParser::ConditionalContext* ctx);
     std::unique_ptr<ASTNode> visitComparison(NowParser::ComparisonContext* ctx);
-    std::unique_ptr<ASTNode> visitOpLiteral(NowParser::OpLiteralContext* ctx);
-    std::unique_ptr<ASTNode> visitOpIdentifier(NowParser::OpIdentifierContext* ctx);
     std::unique_ptr<ASTNode> visitOpExpr(NowParser::OpExprContext* ctx);
     std::unique_ptr<ASTNode> visitAddSubExpr(NowParser::AddSubExprContext* ctx);
     std::unique_ptr<ASTNode> visitMulDivExpr(NowParser::MulDivExprContext* ctx);
