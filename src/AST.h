@@ -25,7 +25,7 @@ public:
              : stmt(value), left(std::move(left)), right(std::move(right)) {}
 
     void printNode(){
-    	std::cout << "Nodo STMT" << std::endl;
+    	std::cout << "Node STMT" << std::endl;
 
     	if(left){
     		std::cout << "Nodo left: ";
@@ -47,10 +47,10 @@ public:
         : id(id), operand(std::move(op)) {}
 
     void printNode(){
-	   	std::cout << "Nodo ASSIGN: " << id << std::endl;
+	   	std::cout << "Node ASSIGN: " << id << std::endl;
 
 	   	if(operand){
-	   		std::cout << "Nodo operand: ";
+	   		std::cout << "With operand: ";
 	   		operand->printNode();
 	   	}
     }
@@ -66,6 +66,19 @@ public:
                     const std::string id,
                     std::unique_ptr<ASTNode> op)
                     : type(typeID), identifier(id), operand(std::move(op)) {}
+
+	void printNode(){
+   		std::cout << "Node DECLARATION: " << type << std::endl;
+
+   		if(!identifier.empty()){
+   			std::cout << "With ID: " << identifier << std::endl;
+	   	}
+
+	   	if(operand){
+   			std::cout << "With operand: ";
+	   		operand->printNode();
+	   	}
+    }
 };
 
 class IdentifierNode : public ASTNode {
@@ -75,7 +88,7 @@ public:
     IdentifierNode(const std::string& n) : value(n) {}
 
     void printNode(){
-	   	std::cout << "Nodo IDENTIFIER: " << value << std::endl;
+	   	std::cout << "Node IDENTIFIER: " << value << std::endl;
     }
 };
 
@@ -86,7 +99,7 @@ public:
     IntLiteralNode(const int val) : value(val) {}
 
     void printNode(){
-	   	std::cout << "Nodo INT LITERAL: " << value << std::endl;
+	   	std::cout << "Node INT LITERAL: " << value << std::endl;
     }
 };
 
@@ -97,7 +110,7 @@ public:
     StringLiteralNode(const std::string& val) : value(val) {}
 
     void printNode(){
-	   	std::cout << "Nodo STRING LITERAL: " << value << std::endl;
+	   	std::cout << "Node STRING LITERAL: " << value << std::endl;
     }
 };
 
@@ -111,6 +124,20 @@ public:
                    std::unique_ptr<ASTNode> lhs,
                    std::unique_ptr<ASTNode> rhs)
         		   : op(op), left(std::move(lhs)), right(std::move(rhs)) {}
+
+	void printNode(){
+   		std::cout << "Node BINARY_EXPR: " << op << std::endl;
+
+   		if(left){
+   			std::cout << "With left operand: ";
+	   		left->printNode();
+	   	}
+
+	   	if(right){
+   			std::cout << "With right operand: ";
+	   		right->printNode();
+	   	}
+    }
 };
 
 class TimeBlockNode : ASTNode {
@@ -122,6 +149,14 @@ class TimeBlockNode : ASTNode {
     TimeBlockNode(int value, const std::string& unit,
                   std::vector<std::unique_ptr<ASTNode>> stmts)
     			  : time(value), timeUnit(unit), statements(std::move(stmts)) {}
+
+	void printNode(){
+   		std::cout << "Node TIME_BLOCK: " << std::to_string(time) << timeUnit << std::endl;
+
+   		for(const std::unique_ptr<ASTNode>& stmt : statements){
+   			stmt->printNode();
+   		}
+    }
 };
 
 class ComparisonNode : ASTNode {
@@ -133,6 +168,20 @@ class ComparisonNode : ASTNode {
                    std::unique_ptr<ASTNode> lt,
                    std::unique_ptr<ASTNode> rt)
 		 		   : op(opSimbol), left(std::move(lt)), right(std::move(rt)) {}
+
+	void printNode(){
+		std::cout << "Node COMPARISON: " << op << std::endl;
+
+		if(left){
+			std::cout << "With left node: ";
+			left->printNode();
+		}
+
+		if(right){
+			std::cout << "With right node: ";
+			right->printNode();
+		}
+	}
 };
 
 class ConditionalNode : ASTNode {

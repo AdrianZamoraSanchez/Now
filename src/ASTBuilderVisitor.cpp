@@ -13,23 +13,29 @@ std::vector<std::unique_ptr<ASTNode>> ASTBuilderVisitor::buildTree(NowParser::Pr
 	std::vector<std::unique_ptr<ASTNode>> programNodeList;
 
 	for (auto stmtCtx : ctx->stmt()) {
-		if (auto assignStmt = dynamic_cast<NowParser::StmtAssignContext*>(stmtCtx)) {
-            std::unique_ptr<ASTNode> node = visitAssign(assignStmt->assign());
+		if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(stmtCtx)) {
+            std::unique_ptr<ASTNode> node = visitAssign(assignCtx->assign());
 			programNodeList.push_back(std::move(node));
             continue;
         }
-		/*
-		if(auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(stmtCtx)){
-			std::unique_ptr<ASTNode> node = visitAssign(timeBlockCtx);
-		}
 
-		if(auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(stmtCtx)){
-			std::unique_ptr<ASTNode> node = visitAssign(conditionalCtx);	
-		}
+		if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(stmtCtx)) {
+            std::unique_ptr<ASTNode> node = visitDeclaration(declarationCtx->declaration());
+			programNodeList.push_back(std::move(node));
+            continue;
+        }
 
-		if(auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(stmtCtx)){
-			std::unique_ptr<ASTNode> node = visitAssign(declarationCtx);			
-		}*/
+        if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(stmtCtx)) {
+         	std::unique_ptr<ASTNode> node = visitTimeBlock(timeBlockCtx->timeBlock());
+			programNodeList.push_back(std::move(node));
+          	continue;
+        }
+
+        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(stmtCtx)) {
+        	std::unique_ptr<ASTNode> node = visitConditional(conditionalCtx->conditional());
+ 			programNodeList.push_back(std::move(node));
+           	continue;
+        }
     }
 
     return programNodeList;
@@ -54,50 +60,85 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitAssign(NowParser::AssignContext
 
 // Operand visitor
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitOperand(NowParser::OperandContext* ctx) {
-   if (auto literalCtx = dynamic_cast<NowParser::OpLiteralContext*>(ctx)) {
-       std::string value = literalCtx->literal()->getText();
-       return std::make_unique<StringLiteralNode>(value);
-   } 
-   else if (auto idCtx = dynamic_cast<NowParser::OpIdentifierContext*>(ctx)) {
-       std::string id = idCtx->IDENTIFIER()->getText();
-       return std::make_unique<IdentifierNode>(id);
-   }
-   else if (auto exprCtx = dynamic_cast<NowParser::OpExprContext*>(ctx)) {
-	   auto operandNode = visitExpr(exprCtx);
+	// Literal operand	
+    if (auto literalCtx = dynamic_cast<NowParser::OpLiteralContext*>(ctx)) {
+    	std::string value = literalCtx->literal()->getText();
 
-	   return operandNode;
+	    if(std::all_of(value.begin(), value.end(), ::isdigit)){
+	    	return std::make_unique<IntLiteralNode>(std::stoi(value));
+	    }
+       	
+    	return std::make_unique<StringLiteralNode>(value);
+    } 
+    // Identifier operand
+    else if (auto idCtx = dynamic_cast<NowParser::OpIdentifierContext*>(ctx)) {
+		std::string id = idCtx->IDENTIFIER()->getText();
+      	return std::make_unique<IdentifierNode>(id);
+  	}
+  	// Expr operand
+  	else if (auto exprCtx = dynamic_cast<NowParser::OpExprContext*>(ctx)) {
+   		auto exprNode = visitExpr(exprCtx->expr());
+	   	return exprNode;
    }
    return nullptr;
 }
 
 // Expr visitor
-std::unique_ptr<ASTNode> ASTBuilderVisitor::visitExpr(NowParser::OpExprContext* ctx) {
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitExpr(NowParser::ExprContext* ctx) {
+	// * or /
     if (auto mulDivCtx = dynamic_cast<NowParser::MulDivExprContext*>(ctx)) {
-		auto left = visitOpExpr(mulDivCtx->expr(0));
-		auto right = visitOpExpr(mulDivCtx->expr(1));
-		std::string op = mulDivCtx->op->getText();	
-		
-	    return std::make_unique<BinaryExprNode>(op, std::move(left), std::move(right));
+        auto left = visitExpr(mulDivCtx->expr(0));
+        auto right = visitExpr(mulDivCtx->expr(1));
+        std::string op = mulDivCtx->op->getText();
+        
+        return std::make_unique<BinaryExprNode>(op, std::move(left), std::move(right));
     } 
+    // + or -
     else if (auto addSubCtx = dynamic_cast<NowParser::AddSubExprContext*>(ctx)) {
-    	
+        auto left = visitExpr(addSubCtx->expr(0));
+        auto right = visitExpr(addSubCtx->expr(1));
+        std::string op = addSubCtx->op->getText();
+        
+        return std::make_unique<BinaryExprNode>(op, std::move(left), std::move(right));
     }
+    // Final recursive call of a numeric value  
     else if (auto numCtx = dynamic_cast<NowParser::NumExprContext*>(ctx)) {
-		int value = std::stoi(numCtx->NUMBER_LITERAL()->getText());
-    	return std::make_unique<IntLiteralNode>(value);
+        int value = std::stoi(numCtx->NUMBER_LITERAL()->getText());
+        
+        return std::make_unique<IntLiteralNode>(value);
     }
+    // Context in which the expr is surrounded by parenthesis
     else if (auto parenCtx = dynamic_cast<NowParser::ParenExprContext*>(ctx)) {
-        	
+        return visitExpr(parenCtx->expr());
     }
 
-    return nullptr;
+    throw std::runtime_error("Unsupported expression type");
 }
 
-std::unique_ptr<ASTNode> ASTBuilderVisitor::visitOpExpr(NowParser::ExprContext* ctx) {
-	if (auto numCtx = dynamic_cast<NowParser::NumExprContext*>(ctx)) {
-    	int value = std::stoi(numCtx->NUMBER_LITERAL()->getText());
-    	return std::make_unique<IntLiteralNode>(value);
-    }
+// Declaration visitor
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::DeclarationContext* ctx) {
+	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationSimpleContext*>(ctx)){
+		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
+		std::string type = typeCtx->getText();
+		
+		std::string id = simplDecCtx->IDENTIFIER()->getText();
+		
+	    return std::make_unique<DeclarationNode>(type, id, nullptr);
+	}
 
-    return nullptr;
+	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationAssingContext*>(ctx)){
+		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
+		std::string type = typeCtx->getText();
+					
+		std::string id = simplDecCtx->IDENTIFIER()->getText();
+		
+		auto operandNode = visitOperand(simplDecCtx->operand());
+			
+	    return std::make_unique<DeclarationNode>(type, id, std::move(operandNode));
+	}
+	
 }
+
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitConditional(NowParser::ConditionalContext* ctx) { return nullptr; }
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockContext* ctx) { return nullptr; }
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitComparison(NowParser::ComparisonContext* ctx) { return nullptr; }

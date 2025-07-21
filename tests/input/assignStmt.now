@@ -5,3 +5,5 @@ variable = 2;
 variable = "string";
 
 variable = 2 + 3;
+
+variable = (2 + 3) - 2;
