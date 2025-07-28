@@ -14,11 +14,10 @@ public:
 };
 
 class StmtNode : public ASTNode {
-public:
 	std::string stmt;
-
 	std::unique_ptr<ASTNode> left, right;
 
+public:
 	StmtNode(const std::string value,
              std::unique_ptr<ASTNode> left,
              std::unique_ptr<ASTNode> right) 
@@ -39,10 +38,10 @@ public:
 };
 
 class AssignNode : public ASTNode {
-public:
 	std::string id;
     std::unique_ptr<ASTNode> operand;
-    
+
+public:
     AssignNode(const std::string& id,  std::unique_ptr<ASTNode> op)
         : id(id), operand(std::move(op)) {}
 
@@ -57,11 +56,11 @@ public:
 };
 
 class DeclarationNode : public ASTNode {
-public:
 	std::string type;
 	std::string identifier;
 	std::unique_ptr<ASTNode> operand;
 
+public:
 	DeclarationNode(const std::string typeID,
                     const std::string id,
                     std::unique_ptr<ASTNode> op)
@@ -82,9 +81,9 @@ public:
 };
 
 class IdentifierNode : public ASTNode {
-public:
     std::string value;
 
+public:
     IdentifierNode(const std::string& n) : value(n) {}
 
     void printNode(){
@@ -93,9 +92,9 @@ public:
 };
 
 class IntLiteralNode : public ASTNode {
-public:
     int value;
-    
+
+public:   
     IntLiteralNode(const int val) : value(val) {}
 
     void printNode(){
@@ -104,9 +103,9 @@ public:
 };
 
 class StringLiteralNode : public ASTNode {
-public:
     std::string value;
-    
+
+public:
     StringLiteralNode(const std::string& val) : value(val) {}
 
     void printNode(){
@@ -115,11 +114,11 @@ public:
 };
 
 class BinaryExprNode : public ASTNode {
-public:
     std::string op;
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
 
+public:
     BinaryExprNode(const std::string& op,
                    std::unique_ptr<ASTNode> lhs,
                    std::unique_ptr<ASTNode> rhs)
@@ -140,12 +139,13 @@ public:
     }
 };
 
-class TimeBlockNode : ASTNode {
+class TimeBlockNode : public ASTNode {
     int time;
     std::string timeUnit;
 
     std::vector<std::unique_ptr<ASTNode>> statements;
 
+public:
     TimeBlockNode(int value, const std::string& unit,
                   std::vector<std::unique_ptr<ASTNode>> stmts)
     			  : time(value), timeUnit(unit), statements(std::move(stmts)) {}
@@ -159,11 +159,12 @@ class TimeBlockNode : ASTNode {
     }
 };
 
-class ComparisonNode : ASTNode {
+class ComparisonNode : public ASTNode {
     std::string op;
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
 
+public:
     ComparisonNode(const std::string opSimbol,
                    std::unique_ptr<ASTNode> lt,
                    std::unique_ptr<ASTNode> rt)
@@ -184,11 +185,21 @@ class ComparisonNode : ASTNode {
 	}
 };
 
-class ConditionalNode : ASTNode {
+class ConditionalNode : public ASTNode {
 	std::unique_ptr<ComparisonNode> comparison;
 	std::vector<std::unique_ptr<ASTNode>> statements;
 
+public:
 	ConditionalNode(std::unique_ptr<ComparisonNode> compNode,
                     std::vector<std::unique_ptr<ASTNode>> stmts)
 					: comparison(std::move(compNode)), statements(std::move(stmts)) {}
+
+	void printNode(){
+		std::cout << "node CONDITIONAL: "; 
+		comparison->printNode();
+		
+		for(const std::unique_ptr<ASTNode>& stmt : statements){
+  			stmt->printNode();
+   		}
+	}
 };

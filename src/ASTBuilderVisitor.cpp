@@ -117,28 +117,78 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitExpr(NowParser::ExprContext* ct
 
 // Declaration visitor
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::DeclarationContext* ctx) {
-	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationSimpleContext*>(ctx)){
-		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
-		std::string type = typeCtx->getText();
-		
-		std::string id = simplDecCtx->IDENTIFIER()->getText();
-		
-	    return std::make_unique<DeclarationNode>(type, id, nullptr);
-	}
-
-	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationAssingContext*>(ctx)){
-		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
+	if(auto decCtx = dynamic_cast<NowParser::DeclarationAssingContext*>(ctx)){
+		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(decCtx->type());
 		std::string type = typeCtx->getText();
 					
-		std::string id = simplDecCtx->IDENTIFIER()->getText();
+		std::string id = decCtx->IDENTIFIER()->getText();
 		
-		auto operandNode = visitOperand(simplDecCtx->operand());
+		auto operandNode = visitOperand(decCtx->operand());
 			
 	    return std::make_unique<DeclarationNode>(type, id, std::move(operandNode));
 	}
-	
+
+	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationSimpleContext*>(ctx)){
+			auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
+			std::string type = typeCtx->getText();
+			
+			std::string id = simplDecCtx->IDENTIFIER()->getText();
+			
+		    return std::make_unique<DeclarationNode>(type, id, nullptr);
+		}
+
+	return nullptr;
 }
 
-std::unique_ptr<ASTNode> ASTBuilderVisitor::visitConditional(NowParser::ConditionalContext* ctx) { return nullptr; }
+// Comparison visitor
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitComparison(NowParser::ComparisonContext* ctx) { 
+	auto left = visitOperand(ctx->operand(0));
+    auto right = visitOperand(ctx->operand(1));
+
+	std::string op = ctx->comparationOperator()->getText();
+	
+	return std::make_unique<ComparisonNode>(op, std::move(left), std::move(right)); 
+}
+
+// Conditional visitor
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitConditional(NowParser::ConditionalContext* ctx) { 
+	std::unique_ptr<ASTNode> rawCondition = visitComparison(ctx->comparison());
+
+	// Cast seguro a ComparisonNode
+	auto* rawPtr = dynamic_cast<ComparisonNode*>(rawCondition.get());
+	if (!rawPtr) {
+	    throw std::runtime_error("Expected ComparisonNode in Conditional");
+	}
+	// Transferimos la propiedad del puntero al tipo correcto
+	std::unique_ptr<ComparisonNode> condition(static_cast<ComparisonNode*>(rawCondition.release()));
+	
+
+	std::vector<std::unique_ptr<ASTNode>> stmts;
+
+	bool blockEnd = false;
+	unsigned int i = 0;
+	
+    for (size_t i = 0; i < ctx->stmt().size(); ++i) {
+        std::unique_ptr<ASTNode> next;
+
+        if (auto conditionalCtx = dynamic_cast<NowParser::ConditionalContext*>(ctx->stmt(i))) {
+            next = visitConditional(conditionalCtx);
+        } else if (auto timeBlockCtx = dynamic_cast<NowParser::TimeBlockContext*>(ctx->stmt(i))) {
+            next = visitTimeBlock(timeBlockCtx);
+        } else if (auto declarationCtx = dynamic_cast<NowParser::DeclarationContext*>(ctx->stmt(i))) {
+            next = visitDeclaration(declarationCtx);
+        } else if (auto assignCtx = dynamic_cast<NowParser::AssignContext*>(ctx->stmt(i))) {
+            next = visitAssign(assignCtx);
+        }
+
+        if (next) {
+            stmts.push_back(std::move(next));
+        }
+    }
+	
+	return std::make_unique<ConditionalNode>(std::move(condition), std::move(stmts));
+}
+
+// Time Block visitor
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockContext* ctx) { return nullptr; }
-std::unique_ptr<ASTNode> ASTBuilderVisitor::visitComparison(NowParser::ComparisonContext* ctx) { return nullptr; }
+
