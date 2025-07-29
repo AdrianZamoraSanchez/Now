@@ -151,7 +151,7 @@ public:
     			  : time(value), timeUnit(unit), statements(std::move(stmts)) {}
 
 	void printNode(){
-   		std::cout << "Node TIME_BLOCK: " << std::to_string(time) << timeUnit << std::endl;
+   		std::cout << "Node TIME_BLOCK with time: " << std::to_string(time) << " and unit: "<< timeUnit << std::endl;
 
    		for(const std::unique_ptr<ASTNode>& stmt : statements){
    			stmt->printNode();

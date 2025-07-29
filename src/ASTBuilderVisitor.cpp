@@ -154,31 +154,28 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitComparison(NowParser::Compariso
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitConditional(NowParser::ConditionalContext* ctx) { 
 	std::unique_ptr<ASTNode> rawCondition = visitComparison(ctx->comparison());
 
-	// Cast seguro a ComparisonNode
+	// Cast to comparison context
 	auto* rawPtr = dynamic_cast<ComparisonNode*>(rawCondition.get());
 	if (!rawPtr) {
 	    throw std::runtime_error("Expected ComparisonNode in Conditional");
 	}
-	// Transferimos la propiedad del puntero al tipo correcto
+	// Transfer of the pointer property to the right type
 	std::unique_ptr<ComparisonNode> condition(static_cast<ComparisonNode*>(rawCondition.release()));
 	
-
 	std::vector<std::unique_ptr<ASTNode>> stmts;
 
-	bool blockEnd = false;
-	unsigned int i = 0;
-	
+	// Context mathing of the stmts in the conditional block
     for (size_t i = 0; i < ctx->stmt().size(); ++i) {
         std::unique_ptr<ASTNode> next;
 
-        if (auto conditionalCtx = dynamic_cast<NowParser::ConditionalContext*>(ctx->stmt(i))) {
-            next = visitConditional(conditionalCtx);
-        } else if (auto timeBlockCtx = dynamic_cast<NowParser::TimeBlockContext*>(ctx->stmt(i))) {
-            next = visitTimeBlock(timeBlockCtx);
-        } else if (auto declarationCtx = dynamic_cast<NowParser::DeclarationContext*>(ctx->stmt(i))) {
-            next = visitDeclaration(declarationCtx);
-        } else if (auto assignCtx = dynamic_cast<NowParser::AssignContext*>(ctx->stmt(i))) {
-            next = visitAssign(assignCtx);
+        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(ctx->stmt(i))) {
+            next = visitConditional(conditionalCtx->conditional());
+        } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(ctx->stmt(i))) {
+            next = visitTimeBlock(timeBlockCtx->timeBlock());
+        } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(ctx->stmt(i))) {
+            next = visitDeclaration(declarationCtx->declaration());
+        } else if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(ctx->stmt(i))) {
+            next = visitAssign(assignCtx->assign());
         }
 
         if (next) {
@@ -190,5 +187,49 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitConditional(NowParser::Conditio
 }
 
 // Time Block visitor
-std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockContext* ctx) { return nullptr; }
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockContext* ctx) { 
+	std::string timeUnit;
+	std::string time;
+	
+	// Cast to the time unit context
+	auto tsCtx = ctx->timeStamp();
+	if (auto msCtx = dynamic_cast<NowParser::MsTimeStampContext*>(tsCtx)) {
+	    time = msCtx->NUMBER_LITERAL()->getText();
+	    timeUnit = "ms";
+	} else if (auto secCtx = dynamic_cast<NowParser::SecTimeStampContext*>(tsCtx)) {
+	    time = secCtx->NUMBER_LITERAL()->getText();
+	    timeUnit = "sec";
+	} else if (auto minCtx = dynamic_cast<NowParser::MinTimeStampContext*>(tsCtx)) {
+	    time = minCtx->NUMBER_LITERAL()->getText();
+		timeUnit = "min";
+	} else if (auto hrCtx = dynamic_cast<NowParser::HrTimeStampContext*>(tsCtx)) {
+	    time = hrCtx->NUMBER_LITERAL()->getText();
+	    timeUnit = "hr";
+	} else {
+	    throw std::runtime_error("Unknown timeStamp type");
+	}
+
+	std::vector<std::unique_ptr<ASTNode>> stmts;
+
+	// Context mathing of the stmts in the time block
+    for (size_t i = 0; i < ctx->stmt().size(); ++i) {
+        std::unique_ptr<ASTNode> next;
+
+        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(ctx->stmt(i))) {
+            next = visitConditional(conditionalCtx->conditional());
+        } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(ctx->stmt(i))) {
+            next = visitTimeBlock(timeBlockCtx->timeBlock());
+        } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(ctx->stmt(i))) {
+            next = visitDeclaration(declarationCtx->declaration());
+        } else if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(ctx->stmt(i))) {
+            next = visitAssign(assignCtx->assign());
+        }
+
+        if (next) {
+            stmts.push_back(std::move(next));
+        }
+    }
+
+	return std::make_unique<TimeBlockNode>(stoi(time), timeUnit, std::move(stmts)); 
+}
 
