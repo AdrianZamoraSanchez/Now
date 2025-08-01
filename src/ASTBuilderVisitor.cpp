@@ -36,6 +36,12 @@ std::vector<std::unique_ptr<ASTNode>> ASTBuilderVisitor::buildTree(NowParser::Pr
  			programNodeList.push_back(std::move(node));
            	continue;
         }
+
+        if (auto functionCtx = dynamic_cast<NowParser::StmtFunDeclarationContext*>(stmtCtx)) {
+	      	std::unique_ptr<ASTNode> node = visitFunction(functionCtx->funcDeclaration());
+			programNodeList.push_back(std::move(node));
+	       	continue;
+    	}
     }
 
     return programNodeList;
@@ -233,3 +239,51 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockC
 	return std::make_unique<TimeBlockNode>(stoi(time), timeUnit, std::move(stmts)); 
 }
 
+// Function visitor
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitFunction(NowParser::FuncDeclarationContext* ctx){
+	std::string functionName = ctx->IDENTIFIER()->getText();
+
+	auto typeCtx = dynamic_cast<NowParser::TypeContext*>(ctx->type());
+	std::string functionType = typeCtx->getText();
+
+	std::vector<std::unique_ptr<DeclarationNode>> paramList = visitParams(ctx->paramList());
+
+	std::vector<std::unique_ptr<ASTNode>> stmts;
+
+	// Context mathing of the stmts in the time block
+    for (size_t i = 0; i < ctx->stmt().size(); ++i) {
+        std::unique_ptr<ASTNode> next;
+
+        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(ctx->stmt(i))) {
+            next = visitConditional(conditionalCtx->conditional());
+        } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(ctx->stmt(i))) {
+            next = visitTimeBlock(timeBlockCtx->timeBlock());
+        } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(ctx->stmt(i))) {
+            next = visitDeclaration(declarationCtx->declaration());
+        } else if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(ctx->stmt(i))) {
+            next = visitAssign(assignCtx->assign());
+        }
+
+        if (next) {
+            stmts.push_back(std::move(next));
+        }
+    }
+	
+	return std::make_unique<FunctionNode>(functionName, functionType, std::move(paramList), std::move(stmts));
+}
+
+// ParamList visitor
+std::vector<std::unique_ptr<DeclarationNode>> ASTBuilderVisitor::visitParams(NowParser::ParamListContext* ctx){
+	std::vector<std::unique_ptr<DeclarationNode>> paramList;
+
+	// Params to declaration nodes
+	for (auto* paramCtx : ctx->param()) {
+		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(paramCtx->type());
+		std::string paramId = paramCtx->IDENTIFIER()->getText();
+		std::string functionType = typeCtx->getText();
+
+		paramList.push_back(std::make_unique<DeclarationNode>(functionType, paramId, std::move(nullptr)));
+	}
+
+	return paramList;
+}

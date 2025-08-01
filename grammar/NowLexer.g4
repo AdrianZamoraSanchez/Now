@@ -43,6 +43,7 @@ LBRACE : '{' ;
 RBRACE : '}' ;
 
 SEMICOLON : ';' ;
+COMMA: ',' ;
 
 // OPERATORS
 ASSING_OP : '=' ;

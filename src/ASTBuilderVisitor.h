@@ -24,4 +24,7 @@ public:
     std::unique_ptr<ASTNode> visitMulDivExpr(NowParser::MulDivExprContext* ctx);
     std::unique_ptr<ASTNode> visitNumExpr(NowParser::NumExprContext* ctx);
     std::unique_ptr<ASTNode> visitParenExpr(NowParser::ParenExprContext* ctx);
+
+    std::unique_ptr<ASTNode> visitFunction(NowParser::FuncDeclarationContext* ctx);
+    std::vector<std::unique_ptr<DeclarationNode>> visitParams(NowParser::ParamListContext* ctx);
 };

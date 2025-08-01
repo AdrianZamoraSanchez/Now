@@ -66,6 +66,10 @@ public:
                     std::unique_ptr<ASTNode> op)
                     : type(typeID), identifier(id), operand(std::move(op)) {}
 
+    DeclarationNode(const std::string typeID,
+                    const std::string id)
+                    : type(typeID), identifier(id), operand(nullptr) {}
+
 	void printNode(){
    		std::cout << "Node DECLARATION: " << type << std::endl;
 
@@ -198,6 +202,34 @@ public:
 		std::cout << "node CONDITIONAL: "; 
 		comparison->printNode();
 		
+		for(const std::unique_ptr<ASTNode>& stmt : statements){
+  			stmt->printNode();
+   		}
+	}
+};
+
+class FunctionNode : public ASTNode {
+	std::string functionName;
+	std::string returnType;
+	std::vector<std::unique_ptr<DeclarationNode>> params;
+	std::vector<std::unique_ptr<ASTNode>> statements;
+
+public:
+	FunctionNode(std::string name,
+				 std::string type,
+				 std::vector<std::unique_ptr<DeclarationNode>> paramList,
+                 std::vector<std::unique_ptr<ASTNode>> stmts)
+				 : functionName(name), returnType(type), params(std::move(paramList)), statements(std::move(stmts)) {}
+
+	void printNode(){
+		std::cout << "node FUNCTION: " << returnType << " - " << functionName << std::endl;
+
+	 	std::cout << "params: " << std::endl;
+		for(const std::unique_ptr<DeclarationNode>& param : params){
+ 			param->printNode();
+   		}
+
+		std::cout << "stmts: " << std::endl;
 		for(const std::unique_ptr<ASTNode>& stmt : statements){
   			stmt->printNode();
    		}

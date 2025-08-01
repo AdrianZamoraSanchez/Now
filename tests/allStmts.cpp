@@ -108,6 +108,8 @@ TEST(NowCompilerStmtTest, declarationStmt){ runTests("declarationStmt"); }
 
 TEST(NowCompilerStmtTest, ifStmt){ runTests("ifStmt"); }
 
+TEST(NowCompilerStmtTest, funcStmt){ runTests("funcStmt"); }
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

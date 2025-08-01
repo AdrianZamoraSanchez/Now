@@ -1,0 +1,1 @@
+(program (stmt (funcDeclaration (type int) function ( (paramList (param (type int) number) , (param (type char) letter)) ) { (stmt (declaration (type int) declaration = (operand (literal 2)) ;)) })))
