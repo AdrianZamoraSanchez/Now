@@ -9,43 +9,11 @@
 
 // Root of the AST
 std::vector<std::unique_ptr<ASTNode>> ASTBuilderVisitor::buildTree(NowParser::ProgramContext* ctx){
-
-	std::vector<std::unique_ptr<ASTNode>> programNodeList;
-
-	for (auto stmtCtx : ctx->stmt()) {
-		if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(stmtCtx)) {
-            std::unique_ptr<ASTNode> node = visitAssign(assignCtx->assign());
-			programNodeList.push_back(std::move(node));
-            continue;
-        }
-
-		if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(stmtCtx)) {
-            std::unique_ptr<ASTNode> node = visitDeclaration(declarationCtx->declaration());
-			programNodeList.push_back(std::move(node));
-            continue;
-        }
-
-        if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(stmtCtx)) {
-         	std::unique_ptr<ASTNode> node = visitTimeBlock(timeBlockCtx->timeBlock());
-			programNodeList.push_back(std::move(node));
-          	continue;
-        }
-
-        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(stmtCtx)) {
-        	std::unique_ptr<ASTNode> node = visitConditional(conditionalCtx->conditional());
- 			programNodeList.push_back(std::move(node));
-           	continue;
-        }
-
-        if (auto functionCtx = dynamic_cast<NowParser::StmtFunDeclarationContext*>(stmtCtx)) {
-	      	std::unique_ptr<ASTNode> node = visitFunction(functionCtx->funcDeclaration());
-			programNodeList.push_back(std::move(node));
-	       	continue;
-    	}
-    }
-
-    return programNodeList;
+	// List of program main stmt nodes
+	return visitStmtList(ctx->stmt());
 }
+
+/*** Intermediate nodes visit functions ***/
 
 // Identifier visitor
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitOpIdentifier(NowParser::OpIdentifierContext* ctx) {
@@ -121,6 +89,8 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitExpr(NowParser::ExprContext* ct
     throw std::runtime_error("Unsupported expression type");
 }
 
+/*** Final stmt visit functions ***/
+
 // Declaration visitor
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::DeclarationContext* ctx) {
 	if(auto decCtx = dynamic_cast<NowParser::DeclarationAssingContext*>(ctx)){
@@ -135,13 +105,13 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::Declarat
 	}
 
 	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationSimpleContext*>(ctx)){
-			auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
-			std::string type = typeCtx->getText();
+		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
+		std::string type = typeCtx->getText();
 			
-			std::string id = simplDecCtx->IDENTIFIER()->getText();
+		std::string id = simplDecCtx->IDENTIFIER()->getText();
 			
-		    return std::make_unique<DeclarationNode>(type, id, nullptr);
-		}
+		return std::make_unique<DeclarationNode>(type, id, nullptr);
+	}
 
 	return nullptr;
 }
@@ -165,29 +135,11 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitConditional(NowParser::Conditio
 	if (!rawPtr) {
 	    throw std::runtime_error("Expected ComparisonNode in Conditional");
 	}
+	
 	// Transfer of the pointer property to the right type
 	std::unique_ptr<ComparisonNode> condition(static_cast<ComparisonNode*>(rawCondition.release()));
 	
-	std::vector<std::unique_ptr<ASTNode>> stmts;
-
-	// Context mathing of the stmts in the conditional block
-    for (size_t i = 0; i < ctx->stmt().size(); ++i) {
-        std::unique_ptr<ASTNode> next;
-
-        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(ctx->stmt(i))) {
-            next = visitConditional(conditionalCtx->conditional());
-        } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(ctx->stmt(i))) {
-            next = visitTimeBlock(timeBlockCtx->timeBlock());
-        } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(ctx->stmt(i))) {
-            next = visitDeclaration(declarationCtx->declaration());
-        } else if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(ctx->stmt(i))) {
-            next = visitAssign(assignCtx->assign());
-        }
-
-        if (next) {
-            stmts.push_back(std::move(next));
-        }
-    }
+	auto stmts = visitStmtList(ctx->stmt());
 	
 	return std::make_unique<ConditionalNode>(std::move(condition), std::move(stmts));
 }
@@ -215,26 +167,7 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockC
 	    throw std::runtime_error("Unknown timeStamp type");
 	}
 
-	std::vector<std::unique_ptr<ASTNode>> stmts;
-
-	// Context mathing of the stmts in the time block
-    for (size_t i = 0; i < ctx->stmt().size(); ++i) {
-        std::unique_ptr<ASTNode> next;
-
-        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(ctx->stmt(i))) {
-            next = visitConditional(conditionalCtx->conditional());
-        } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(ctx->stmt(i))) {
-            next = visitTimeBlock(timeBlockCtx->timeBlock());
-        } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(ctx->stmt(i))) {
-            next = visitDeclaration(declarationCtx->declaration());
-        } else if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(ctx->stmt(i))) {
-            next = visitAssign(assignCtx->assign());
-        }
-
-        if (next) {
-            stmts.push_back(std::move(next));
-        }
-    }
+	auto stmts = visitStmtList(ctx->stmt());
 
 	return std::make_unique<TimeBlockNode>(stoi(time), timeUnit, std::move(stmts)); 
 }
@@ -242,32 +175,12 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockC
 // Function visitor
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitFunction(NowParser::FuncDeclarationContext* ctx){
 	std::string functionName = ctx->IDENTIFIER()->getText();
-
-	auto typeCtx = dynamic_cast<NowParser::TypeContext*>(ctx->type());
-	std::string functionType = typeCtx->getText();
+	
+	std::string functionType = ctx->type()->getText();
 
 	std::vector<std::unique_ptr<DeclarationNode>> paramList = visitParams(ctx->paramList());
 
-	std::vector<std::unique_ptr<ASTNode>> stmts;
-
-	// Context mathing of the stmts in the time block
-    for (size_t i = 0; i < ctx->stmt().size(); ++i) {
-        std::unique_ptr<ASTNode> next;
-
-        if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(ctx->stmt(i))) {
-            next = visitConditional(conditionalCtx->conditional());
-        } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(ctx->stmt(i))) {
-            next = visitTimeBlock(timeBlockCtx->timeBlock());
-        } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(ctx->stmt(i))) {
-            next = visitDeclaration(declarationCtx->declaration());
-        } else if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(ctx->stmt(i))) {
-            next = visitAssign(assignCtx->assign());
-        }
-
-        if (next) {
-            stmts.push_back(std::move(next));
-        }
-    }
+	auto stmts = visitStmtList(ctx->stmt());
 	
 	return std::make_unique<FunctionNode>(functionName, functionType, std::move(paramList), std::move(stmts));
 }
@@ -282,8 +195,42 @@ std::vector<std::unique_ptr<DeclarationNode>> ASTBuilderVisitor::visitParams(Now
 		std::string paramId = paramCtx->IDENTIFIER()->getText();
 		std::string functionType = typeCtx->getText();
 
-		paramList.push_back(std::make_unique<DeclarationNode>(functionType, paramId, std::move(nullptr)));
+		paramList.push_back(std::make_unique<DeclarationNode>(functionType, paramId, nullptr));
 	}
 
 	return paramList;
 }
+
+
+/*** Auxiliary visit functions ***/
+
+// STMT list
+std::unique_ptr<ASTNode> ASTBuilderVisitor::visitStmt(NowParser::StmtContext* stmtCtx) {
+    if (auto assignCtx = dynamic_cast<NowParser::StmtAssignContext*>(stmtCtx)) {
+        return visitAssign(assignCtx->assign());
+    } else if (auto declarationCtx = dynamic_cast<NowParser::StmtDeclarationContext*>(stmtCtx)) {
+        return visitDeclaration(declarationCtx->declaration());
+    } else if (auto timeBlockCtx = dynamic_cast<NowParser::StmtTimeBlockContext*>(stmtCtx)) {
+        return visitTimeBlock(timeBlockCtx->timeBlock());
+    } else if (auto conditionalCtx = dynamic_cast<NowParser::StmtConditionalContext*>(stmtCtx)) {
+        return visitConditional(conditionalCtx->conditional());
+    } else if (auto functionCtx = dynamic_cast<NowParser::StmtFunDeclarationContext*>(stmtCtx)) {
+        return visitFunction(functionCtx->funcDeclaration());
+    }
+    
+    return nullptr;
+}
+
+// Single STMT visit
+std::vector<std::unique_ptr<ASTNode>> ASTBuilderVisitor::visitStmtList(const std::vector<NowParser::StmtContext*>& stmts) {
+    std::vector<std::unique_ptr<ASTNode>> result;
+
+    for (auto* stmt : stmts) {
+        if (auto node = visitStmt(stmt)) {
+            result.push_back(std::move(node));
+        }
+    }
+
+    return result;
+}
+

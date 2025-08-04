@@ -4,39 +4,116 @@
 #include <vector>
 #include <iostream>
 
+/* BASE AST NODE CLASS */
 class ASTNode {
 public:
 	virtual ~ASTNode() = default;
 
-	virtual void printNode(){
-		std::cout << "Default" << std::endl;
+	virtual void printNode() const {
+		std::cout << "Default!" << std::endl;
 	};
 };
 
-class StmtNode : public ASTNode {
-	std::string stmt;
-	std::unique_ptr<ASTNode> left, right;
+
+/*** SIMPLE STRUCTURES ***/
+
+/* IDENTIFIER NODE */
+class IdentifierNode : public ASTNode {
+    std::string value;
 
 public:
-	StmtNode(const std::string value,
-             std::unique_ptr<ASTNode> left,
-             std::unique_ptr<ASTNode> right) 
-             : stmt(value), left(std::move(left)), right(std::move(right)) {}
+    IdentifierNode(const std::string& val) : value(val) {}
 
-    void printNode(){
-    	std::cout << "Node STMT" << std::endl;
-
-    	if(left){
-    		std::cout << "Nodo left: ";
-    		left->printNode();
-    	}
-    	if(right){
-    		std::cout << "Nodo right: ";
-    		right->printNode();
-    	}
+    void printNode() const override {
+	   	std::cout << "Node IDENTIFIER: " << value << std::endl;
     }
 };
 
+/* INT LITERAL NODE */
+class IntLiteralNode : public ASTNode {
+    int value;
+
+public:   
+    IntLiteralNode(const int val) : value(val) {}
+
+    void printNode() const override {
+	   	std::cout << "Node INT LITERAL: " << value << std::endl;
+    }
+};
+
+/* STRING LITERAL NODE */
+class StringLiteralNode : public ASTNode {
+    std::string value;
+
+public:
+    StringLiteralNode(const std::string& val) : value(val) {}
+
+    void printNode() const override {
+	   	std::cout << "Node STRING LITERAL: " << value << std::endl;
+    }
+};
+
+
+/*** INTERMEDIATE STRUCTURES ***/
+
+/* BINARY EXPRESION NODE */
+class BinaryExprNode : public ASTNode {
+    std::string op;
+    std::unique_ptr<ASTNode> left;
+    std::unique_ptr<ASTNode> right;
+
+public:
+    BinaryExprNode(const std::string& op,
+                   std::unique_ptr<ASTNode> lhs,
+                   std::unique_ptr<ASTNode> rhs)
+        		   : op(op), left(std::move(lhs)), right(std::move(rhs)) {}
+
+	void printNode() const override {
+   		std::cout << "Node BINARY_EXPR: " << op << std::endl;
+
+   		if(left){
+   			std::cout << "With left operand: ";
+	   		left->printNode();
+	   	}
+
+	   	if(right){
+   			std::cout << "With right operand: ";
+	   		right->printNode();
+	   	}
+    }
+};
+
+/* COMPARISON NODE */
+class ComparisonNode : public ASTNode {
+    std::string op;
+    std::unique_ptr<ASTNode> left;
+    std::unique_ptr<ASTNode> right;
+
+public:
+    ComparisonNode(const std::string opSimbol,
+                   std::unique_ptr<ASTNode> lt,
+                   std::unique_ptr<ASTNode> rt)
+		 		   : op(opSimbol), left(std::move(lt)), right(std::move(rt)) {}
+
+	void printNode() const override {
+		std::cout << "Node COMPARISON: " << op << std::endl;
+
+		if(left){
+			std::cout << "With left node: ";
+			left->printNode();
+		}
+
+		if(right){
+			std::cout << "With right node: ";
+			right->printNode();
+		}
+	}
+};
+
+
+/*** STMTs STRUCTURES ***/
+
+/* ASSIGN NODE */
 class AssignNode : public ASTNode {
 	std::string id;
     std::unique_ptr<ASTNode> operand;
@@ -45,7 +122,7 @@ public:
     AssignNode(const std::string& id,  std::unique_ptr<ASTNode> op)
         : id(id), operand(std::move(op)) {}
 
-    void printNode(){
+    void printNode() const override {
 	   	std::cout << "Node ASSIGN: " << id << std::endl;
 
 	   	if(operand){
@@ -55,6 +132,7 @@ public:
     }
 };
 
+/* DECLARATION NODE */
 class DeclarationNode : public ASTNode {
 	std::string type;
 	std::string identifier;
@@ -70,7 +148,7 @@ public:
                     const std::string id)
                     : type(typeID), identifier(id), operand(nullptr) {}
 
-	void printNode(){
+	void printNode() const override {
    		std::cout << "Node DECLARATION: " << type << std::endl;
 
    		if(!identifier.empty()){
@@ -84,65 +162,7 @@ public:
     }
 };
 
-class IdentifierNode : public ASTNode {
-    std::string value;
-
-public:
-    IdentifierNode(const std::string& n) : value(n) {}
-
-    void printNode(){
-	   	std::cout << "Node IDENTIFIER: " << value << std::endl;
-    }
-};
-
-class IntLiteralNode : public ASTNode {
-    int value;
-
-public:   
-    IntLiteralNode(const int val) : value(val) {}
-
-    void printNode(){
-	   	std::cout << "Node INT LITERAL: " << value << std::endl;
-    }
-};
-
-class StringLiteralNode : public ASTNode {
-    std::string value;
-
-public:
-    StringLiteralNode(const std::string& val) : value(val) {}
-
-    void printNode(){
-	   	std::cout << "Node STRING LITERAL: " << value << std::endl;
-    }
-};
-
-class BinaryExprNode : public ASTNode {
-    std::string op;
-    std::unique_ptr<ASTNode> left;
-    std::unique_ptr<ASTNode> right;
-
-public:
-    BinaryExprNode(const std::string& op,
-                   std::unique_ptr<ASTNode> lhs,
-                   std::unique_ptr<ASTNode> rhs)
-        		   : op(op), left(std::move(lhs)), right(std::move(rhs)) {}
-
-	void printNode(){
-   		std::cout << "Node BINARY_EXPR: " << op << std::endl;
-
-   		if(left){
-   			std::cout << "With left operand: ";
-	   		left->printNode();
-	   	}
-
-	   	if(right){
-   			std::cout << "With right operand: ";
-	   		right->printNode();
-	   	}
-    }
-};
-
+/* TIME BLOCK NODE */
 class TimeBlockNode : public ASTNode {
     int time;
     std::string timeUnit;
@@ -154,8 +174,8 @@ public:
                   std::vector<std::unique_ptr<ASTNode>> stmts)
     			  : time(value), timeUnit(unit), statements(std::move(stmts)) {}
 
-	void printNode(){
-   		std::cout << "Node TIME_BLOCK with time: " << std::to_string(time) << " and unit: "<< timeUnit << std::endl;
+	void printNode() const override {
+   		std::cout << "Node TIME_BLOCK with time: " << time << " and unit: "<< timeUnit << std::endl;
 
    		for(const std::unique_ptr<ASTNode>& stmt : statements){
    			stmt->printNode();
@@ -163,32 +183,8 @@ public:
     }
 };
 
-class ComparisonNode : public ASTNode {
-    std::string op;
-    std::unique_ptr<ASTNode> left;
-    std::unique_ptr<ASTNode> right;
 
-public:
-    ComparisonNode(const std::string opSimbol,
-                   std::unique_ptr<ASTNode> lt,
-                   std::unique_ptr<ASTNode> rt)
-		 		   : op(opSimbol), left(std::move(lt)), right(std::move(rt)) {}
-
-	void printNode(){
-		std::cout << "Node COMPARISON: " << op << std::endl;
-
-		if(left){
-			std::cout << "With left node: ";
-			left->printNode();
-		}
-
-		if(right){
-			std::cout << "With right node: ";
-			right->printNode();
-		}
-	}
-};
-
+/* CONDITIONAL NODE */
 class ConditionalNode : public ASTNode {
 	std::unique_ptr<ComparisonNode> comparison;
 	std::vector<std::unique_ptr<ASTNode>> statements;
@@ -198,7 +194,7 @@ public:
                     std::vector<std::unique_ptr<ASTNode>> stmts)
 					: comparison(std::move(compNode)), statements(std::move(stmts)) {}
 
-	void printNode(){
+	void printNode() const override {
 		std::cout << "node CONDITIONAL: "; 
 		comparison->printNode();
 		
@@ -208,6 +204,7 @@ public:
 	}
 };
 
+/* FUNCTION NODE */
 class FunctionNode : public ASTNode {
 	std::string functionName;
 	std::string returnType;
@@ -215,13 +212,13 @@ class FunctionNode : public ASTNode {
 	std::vector<std::unique_ptr<ASTNode>> statements;
 
 public:
-	FunctionNode(std::string name,
-				 std::string type,
+	FunctionNode(const std::string name,
+				 const std::string type,
 				 std::vector<std::unique_ptr<DeclarationNode>> paramList,
                  std::vector<std::unique_ptr<ASTNode>> stmts)
 				 : functionName(name), returnType(type), params(std::move(paramList)), statements(std::move(stmts)) {}
 
-	void printNode(){
+	void printNode() const override {
 		std::cout << "node FUNCTION: " << returnType << " - " << functionName << std::endl;
 
 	 	std::cout << "params: " << std::endl;

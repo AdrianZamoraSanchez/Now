@@ -27,4 +27,7 @@ public:
 
     std::unique_ptr<ASTNode> visitFunction(NowParser::FuncDeclarationContext* ctx);
     std::vector<std::unique_ptr<DeclarationNode>> visitParams(NowParser::ParamListContext* ctx);
+
+    std::unique_ptr<ASTNode> visitStmt(NowParser::StmtContext* stmtCtx);
+    std::vector<std::unique_ptr<ASTNode>> visitStmtList(const std::vector<NowParser::StmtContext*>& stmts);
 };
