@@ -19,6 +19,7 @@ link_directories(/usr/local/lib)
 add_executable(NowCompiler
     src/main.cpp
     src/ASTBuilderVisitor.cpp
+    src/Type.cpp
     grammar/NowLexer.cpp
     grammar/NowParser.cpp
 )
@@ -45,8 +46,9 @@ target_link_libraries(NowCompiler
 
 # Fuentes principales de la app
 set(SRC_SOURCES
-    ${PROJECT_SOURCE_DIR}/src/main.cpp
+	${PROJECT_SOURCE_DIR}/src/main.cpp
     ${PROJECT_SOURCE_DIR}/src/ASTBuilderVisitor.cpp
+    ${PROJECT_SOURCE_DIR}/src/Type.cpp
     ${PROJECT_SOURCE_DIR}/grammar/NowLexer.cpp
     ${PROJECT_SOURCE_DIR}/grammar/NowParser.cpp
 )
@@ -78,6 +80,7 @@ set(GRAMMAR_SOURCES
 
 set(SRC_SOURCES
     ${PROJECT_SOURCE_DIR}/src/ASTBuilderVisitor.cpp
+	${PROJECT_SOURCE_DIR}/src/Type.cpp
 )
 
 # Crear librería con la lógica del compilador

@@ -95,7 +95,9 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitExpr(NowParser::ExprContext* ct
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::DeclarationContext* ctx) {
 	if(auto decCtx = dynamic_cast<NowParser::DeclarationAssingContext*>(ctx)){
 		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(decCtx->type());
-		std::string type = typeCtx->getText();
+		std::string typeString = typeCtx->getText();
+
+		Type type = getTypeFromString(typeString);
 					
 		std::string id = decCtx->IDENTIFIER()->getText();
 		
@@ -106,11 +108,13 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::Declarat
 
 	if(auto simplDecCtx = dynamic_cast<NowParser::DeclarationSimpleContext*>(ctx)){
 		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(simplDecCtx->type());
-		std::string type = typeCtx->getText();
+		std::string typeString = typeCtx->getText();
+		
+		Type type = getTypeFromString(typeString);
 			
 		std::string id = simplDecCtx->IDENTIFIER()->getText();
 			
-		return std::make_unique<DeclarationNode>(type, id, nullptr);
+		return std::make_unique<DeclarationNode>(type, id);
 	}
 
 	return nullptr;
@@ -176,7 +180,8 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitTimeBlock(NowParser::TimeBlockC
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitFunction(NowParser::FuncDeclarationContext* ctx){
 	std::string functionName = ctx->IDENTIFIER()->getText();
 	
-	std::string functionType = ctx->type()->getText();
+	std::string functionTypeString = ctx->type()->getText();
+	Type functionType = getTypeFromString(functionTypeString);
 
 	std::vector<std::unique_ptr<DeclarationNode>> paramList = visitParams(ctx->paramList());
 
@@ -193,7 +198,8 @@ std::vector<std::unique_ptr<DeclarationNode>> ASTBuilderVisitor::visitParams(Now
 	for (auto* paramCtx : ctx->param()) {
 		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(paramCtx->type());
 		std::string paramId = paramCtx->IDENTIFIER()->getText();
-		std::string functionType = typeCtx->getText();
+	    std::string functionTypeString = paramCtx->type()->getText();
+    	Type functionType = getTypeFromString(functionTypeString);
 
 		paramList.push_back(std::make_unique<DeclarationNode>(functionType, paramId, nullptr));
 	}

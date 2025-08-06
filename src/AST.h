@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "Type.h"
 
 /* BASE AST NODE CLASS */
 class ASTNode {
@@ -134,22 +135,22 @@ public:
 
 /* DECLARATION NODE */
 class DeclarationNode : public ASTNode {
-	std::string type;
+	Type type;
 	std::string identifier;
 	std::unique_ptr<ASTNode> operand;
 
 public:
-	DeclarationNode(const std::string typeID,
+	DeclarationNode(const Type& typeID,
                     const std::string id,
                     std::unique_ptr<ASTNode> op)
                     : type(typeID), identifier(id), operand(std::move(op)) {}
 
-    DeclarationNode(const std::string typeID,
+    DeclarationNode(const Type& typeID,
                     const std::string id)
                     : type(typeID), identifier(id), operand(nullptr) {}
 
 	void printNode() const override {
-   		std::cout << "Node DECLARATION: " << type << std::endl;
+   		std::cout << "Node DECLARATION: " << getStringFromType(type) << std::endl;
 
    		if(!identifier.empty()){
    			std::cout << "With ID: " << identifier << std::endl;
@@ -207,19 +208,19 @@ public:
 /* FUNCTION NODE */
 class FunctionNode : public ASTNode {
 	std::string functionName;
-	std::string returnType;
+	Type returnType;
 	std::vector<std::unique_ptr<DeclarationNode>> params;
 	std::vector<std::unique_ptr<ASTNode>> statements;
 
 public:
-	FunctionNode(const std::string name,
-				 const std::string type,
+	FunctionNode(const std::string& name,
+				 const Type& type,
 				 std::vector<std::unique_ptr<DeclarationNode>> paramList,
                  std::vector<std::unique_ptr<ASTNode>> stmts)
 				 : functionName(name), returnType(type), params(std::move(paramList)), statements(std::move(stmts)) {}
 
 	void printNode() const override {
-		std::cout << "node FUNCTION: " << returnType << " - " << functionName << std::endl;
+		std::cout << "node FUNCTION: " << getStringFromType(returnType) << " - " << functionName << std::endl;
 
 	 	std::cout << "params: " << std::endl;
 		for(const std::unique_ptr<DeclarationNode>& param : params){

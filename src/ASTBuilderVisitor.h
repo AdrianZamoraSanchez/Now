@@ -1,5 +1,4 @@
 #pragma once
-
 #include "AST.h"
 #include "../grammar/NowParser.h"
 #include <memory>
