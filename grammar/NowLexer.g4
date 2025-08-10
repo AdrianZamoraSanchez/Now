@@ -22,7 +22,7 @@ INT     : 'int' ;
 FLOAT   : 'float' ;
 CHAR    : 'char' ;
 STRING  : 'string' ;
-BOOLEAN : 'boolean' ;
+BOOLEAN : 'bool' ;
 
 // Time Stamps
 MS  : 'ms' ;

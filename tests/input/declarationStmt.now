@@ -2,4 +2,4 @@ int number;
 
 int number = 2;
 
-boolean boolVar = true;
+bool boolVar = true;

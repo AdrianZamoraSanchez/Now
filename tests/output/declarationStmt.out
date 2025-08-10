@@ -1,1 +1,1 @@
-(program (stmt (declaration (type int) number ;)) (stmt (declaration (type int) number = (operand (literal 2)) ;)) (stmt (declaration (type boolean) boolVar = (operand (literal (booleanLiteral true))) ;)))
+(program (stmt (declaration (type int) number ;)) (stmt (declaration (type int) number = (operand (literal 2)) ;)) (stmt (declaration (type bool) boolVar = (operand (literal (booleanLiteral true))) ;)))

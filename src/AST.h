@@ -5,12 +5,19 @@
 #include <iostream>
 #include "Type.h"
 
+// Auxiliar function for print nodes
+inline void printIndent(int indent){
+	for(int i = 0; i < indent; i++){
+  		std::cout << "	";
+   	}
+}
+
 /* BASE AST NODE CLASS */
 class ASTNode {
 public:
 	virtual ~ASTNode() = default;
 
-	virtual void printNode() const {
+	virtual void printNode(int indent = 0) const {
 		std::cout << "Default!" << std::endl;
 	};
 };
@@ -25,7 +32,8 @@ class IdentifierNode : public ASTNode {
 public:
     IdentifierNode(const std::string& val) : value(val) {}
 
-    void printNode() const override {
+    void printNode(int indent = 0) const override {
+    	printIndent(indent);
 	   	std::cout << "Node IDENTIFIER: " << value << std::endl;
     }
 };
@@ -37,7 +45,8 @@ class IntLiteralNode : public ASTNode {
 public:   
     IntLiteralNode(const int val) : value(val) {}
 
-    void printNode() const override {
+    void printNode(int indent = 0) const override {
+    	printIndent(indent);
 	   	std::cout << "Node INT LITERAL: " << value << std::endl;
     }
 };
@@ -49,7 +58,8 @@ class StringLiteralNode : public ASTNode {
 public:
     StringLiteralNode(const std::string& val) : value(val) {}
 
-    void printNode() const override {
+    void printNode(int indent = 0) const override {
+    	printIndent(indent);
 	   	std::cout << "Node STRING LITERAL: " << value << std::endl;
     }
 };
@@ -69,17 +79,21 @@ public:
                    std::unique_ptr<ASTNode> rhs)
         		   : op(op), left(std::move(lhs)), right(std::move(rhs)) {}
 
-	void printNode() const override {
+	void printNode(int indent = 0) const override {
+		printIndent(indent);
+       	
    		std::cout << "Node BINARY_EXPR: " << op << std::endl;
 
    		if(left){
-   			std::cout << "With left operand: ";
-	   		left->printNode();
+   			printIndent(indent);
+   			std::cout << "With left operand: " << std::endl;
+	   		left->printNode(indent+1);
 	   	}
 
 	   	if(right){
-   			std::cout << "With right operand: ";
-	   		right->printNode();
+	   		printIndent(indent);
+   			std::cout << "With right operand: " << std::endl;
+	   		right->printNode(indent+1);
 	   	}
     }
 };
@@ -96,17 +110,21 @@ public:
                    std::unique_ptr<ASTNode> rt)
 		 		   : op(opSimbol), left(std::move(lt)), right(std::move(rt)) {}
 
-	void printNode() const override {
+	void printNode(int indent = 0) const override {
+		printIndent(indent);
+       	
 		std::cout << "Node COMPARISON: " << op << std::endl;
 
 		if(left){
-			std::cout << "With left node: ";
-			left->printNode();
+			printIndent(indent);
+			std::cout << "With left node: " << std::endl;
+			left->printNode(indent+1);
 		}
 
 		if(right){
-			std::cout << "With right node: ";
-			right->printNode();
+			printIndent(indent);
+			std::cout << "With right node: " << std::endl;
+			right->printNode(indent+1);
 		}
 	}
 };
@@ -123,12 +141,14 @@ public:
     AssignNode(const std::string& id,  std::unique_ptr<ASTNode> op)
         : id(id), operand(std::move(op)) {}
 
-    void printNode() const override {
+    void printNode(int indent = 0) const override {
+    	printIndent(indent);
 	   	std::cout << "Node ASSIGN: " << id << std::endl;
 
 	   	if(operand){
-	   		std::cout << "With operand: ";
-	   		operand->printNode();
+	   		printIndent(indent);
+	   		std::cout << "With operand: " << std::endl;
+	   		operand->printNode(indent+1);
 	   	}
     }
 };
@@ -149,16 +169,15 @@ public:
                     const std::string id)
                     : type(typeID), identifier(id), operand(nullptr) {}
 
-	void printNode() const override {
-   		std::cout << "Node DECLARATION: " << getStringFromType(type) << std::endl;
-
-   		if(!identifier.empty()){
-   			std::cout << "With ID: " << identifier << std::endl;
-	   	}
+	void printNode(int indent = 0) const override {
+		printIndent(indent);
+       	
+   		std::cout << "Node DECLARATION: " << getStringFromType(type) << " - With ID: " << identifier << std::endl;
 
 	   	if(operand){
-   			std::cout << "With operand: ";
-	   		operand->printNode();
+	   		printIndent(indent);
+   			std::cout << "With operand: " << std::endl;
+	   		operand->printNode(indent+1);
 	   	}
     }
 };
@@ -175,11 +194,12 @@ public:
                   std::vector<std::unique_ptr<ASTNode>> stmts)
     			  : time(value), timeUnit(unit), statements(std::move(stmts)) {}
 
-	void printNode() const override {
+	void printNode(int indent = 0) const override {
+		printIndent(indent);
    		std::cout << "Node TIME_BLOCK with time: " << time << " and unit: "<< timeUnit << std::endl;
 
    		for(const std::unique_ptr<ASTNode>& stmt : statements){
-   			stmt->printNode();
+   			stmt->printNode(indent+1);
    		}
     }
 };
@@ -195,12 +215,13 @@ public:
                     std::vector<std::unique_ptr<ASTNode>> stmts)
 					: comparison(std::move(compNode)), statements(std::move(stmts)) {}
 
-	void printNode() const override {
-		std::cout << "node CONDITIONAL: "; 
-		comparison->printNode();
+	void printNode(int indent = 0) const override {
+		printIndent(indent);
+		std::cout << "node CONDITIONAL: " << std::endl;
+		comparison->printNode(indent+1);
 		
 		for(const std::unique_ptr<ASTNode>& stmt : statements){
-  			stmt->printNode();
+  			stmt->printNode(indent+2);
    		}
 	}
 };
@@ -219,17 +240,19 @@ public:
                  std::vector<std::unique_ptr<ASTNode>> stmts)
 				 : functionName(name), returnType(type), params(std::move(paramList)), statements(std::move(stmts)) {}
 
-	void printNode() const override {
+	void printNode(int indent = 0) const override {
+		printIndent(indent);
 		std::cout << "node FUNCTION: " << getStringFromType(returnType) << " - " << functionName << std::endl;
 
+		printIndent(indent);
 	 	std::cout << "params: " << std::endl;
 		for(const std::unique_ptr<DeclarationNode>& param : params){
- 			param->printNode();
+ 			param->printNode(indent+1);
    		}
 
 		std::cout << "stmts: " << std::endl;
 		for(const std::unique_ptr<ASTNode>& stmt : statements){
-  			stmt->printNode();
+  			stmt->printNode(indent+1);
    		}
 	}
 };

@@ -95,7 +95,10 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitExpr(NowParser::ExprContext* ct
 std::unique_ptr<ASTNode> ASTBuilderVisitor::visitDeclaration(NowParser::DeclarationContext* ctx) {
 	if(auto decCtx = dynamic_cast<NowParser::DeclarationAssingContext*>(ctx)){
 		auto typeCtx = dynamic_cast<NowParser::TypeContext*>(decCtx->type());
+
 		std::string typeString = typeCtx->getText();
+
+		std::cout << typeString << std::endl;
 
 		Type type = getTypeFromString(typeString);
 					
