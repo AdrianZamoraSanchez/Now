@@ -134,16 +134,16 @@ public:
 
 /* ASSIGN NODE */
 class AssignNode : public ASTNode {
-	std::string id;
+	std::string identifier;
     std::unique_ptr<ASTNode> operand;
 
 public:
     AssignNode(const std::string& id,  std::unique_ptr<ASTNode> op)
-        : id(id), operand(std::move(op)) {}
+        : identifier(id), operand(std::move(op)) {}
 
     void printNode(int indent = 0) const override {
     	printIndent(indent);
-	   	std::cout << "Node ASSIGN: " << id << std::endl;
+	   	std::cout << "Node ASSIGN: " << identifier << std::endl;
 
 	   	if(operand){
 	   		printIndent(indent);

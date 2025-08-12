@@ -21,6 +21,7 @@ add_executable(NowCompiler
     src/ASTBuilderVisitor.cpp
     src/Type.cpp
     src/Scope.cpp
+    src/SemanticVisitor.cpp
     grammar/NowLexer.cpp
     grammar/NowParser.cpp
 )
