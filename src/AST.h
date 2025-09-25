@@ -4,7 +4,12 @@
 #include <vector>
 #include <iostream>
 #include "Type.h"
-
+#include "Scope.h"
+/*
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/IRBuilder.h>
+*/
 // Auxiliar function for print nodes
 inline void printIndent(int indent){
 	for(int i = 0; i < indent; i++){
@@ -14,12 +19,19 @@ inline void printIndent(int indent){
 
 /* BASE AST NODE CLASS */
 class ASTNode {
+private:
+	//int nodeId;
 public:
 	virtual ~ASTNode() = default;
 
 	virtual void printNode(int indent = 0) const {
 		std::cout << "Default!" << std::endl;
 	};
+	/*
+	std::string getNodeId() const {
+		return std::to_string(nodeId);
+	};
+	*/
 };
 
 
@@ -36,6 +48,17 @@ public:
     	printIndent(indent);
 	   	std::cout << "Node IDENTIFIER: " << value << std::endl;
     }
+
+    std::string getValue() const {
+    	return value;
+	}
+
+	// TODO!
+	/*
+	llvm::Value codegen(){
+		return nullptr
+	}
+	*/
 };
 
 /* INT LITERAL NODE */
@@ -49,6 +72,14 @@ public:
     	printIndent(indent);
 	   	std::cout << "Node INT LITERAL: " << value << std::endl;
     }
+
+    std::string getValue() const {
+       	return std::to_string(value);
+    }
+
+	int getNumericValue() const {
+       	return value;
+    }
 };
 
 /* STRING LITERAL NODE */
@@ -61,6 +92,10 @@ public:
     void printNode(int indent = 0) const override {
     	printIndent(indent);
 	   	std::cout << "Node STRING LITERAL: " << value << std::endl;
+    }
+
+    std::string getValue() const{
+    	return value;
     }
 };
 
@@ -96,6 +131,25 @@ public:
 	   		right->printNode(indent+1);
 	   	}
     }
+
+    std::string getOperator() const{
+   		return op;
+   	}
+
+   	std::unique_ptr<ASTNode> getRight(){
+		return std::move(right);
+	}
+   	
+	std::unique_ptr<ASTNode> getLeft(){
+		return std::move(left);
+	}
+
+	std::string getValue() const {
+		return "ExprNode";
+	}
+
+	ASTNode* getLeftRaw() const { return left.get(); }
+	ASTNode* getRightRaw() const { return right.get(); }
 };
 
 /* COMPARISON NODE */
@@ -127,6 +181,25 @@ public:
 			right->printNode(indent+1);
 		}
 	}
+
+	std::string getOperator(){
+		return op;
+	}
+
+	std::unique_ptr<ASTNode> getRight(){
+		return std::move(right);
+	}
+
+	std::unique_ptr<ASTNode> getLeft(){
+		return std::move(left);
+	}
+
+	std::string getValue() const {
+		return "ComparisonNode";
+	}
+
+	ASTNode* getLeftRaw() const { return left.get(); }
+	ASTNode* getRightRaw() const { return right.get(); }
 };
 
 
@@ -151,6 +224,16 @@ public:
 	   		operand->printNode(indent+1);
 	   	}
     }
+
+    std::string getValue() const{
+    	return identifier;
+    }
+
+    std::unique_ptr<ASTNode> getOperand(){
+    	return std::move(operand);
+    }
+
+	ASTNode* getOperandRaw() const { return operand.get(); }
 };
 
 /* DECLARATION NODE */
@@ -180,6 +263,24 @@ public:
 	   		operand->printNode(indent+1);
 	   	}
     }
+
+    Type getType(){
+    	return type;
+    }
+
+    std::string getID(){
+    	return identifier;
+    }
+
+	std::string getValue() const {
+		return getStringFromType(type) + identifier;
+	}
+
+    std::unique_ptr<ASTNode> getOperand(){
+    	return std::move(operand);
+    }
+
+	ASTNode* getOperandRaw() const { return operand.get(); }
 };
 
 /* TIME BLOCK NODE */
@@ -202,6 +303,18 @@ public:
    			stmt->printNode(indent+1);
    		}
     }
+
+    std::string getValue() const {
+    	return timeUnit + std::to_string(time);
+    }
+	
+	int getTime(){
+    	return time;
+    }
+
+    std::string getTimeUnit(){
+    	return timeUnit;
+    } 
 };
 
 
@@ -223,6 +336,10 @@ public:
 		for(const std::unique_ptr<ASTNode>& stmt : statements){
   			stmt->printNode(indent+2);
    		}
+	}
+
+	std::string getValue() const {
+		return "CONDITIONAL NODE";
 	}
 };
 
@@ -246,13 +363,27 @@ public:
 
 		printIndent(indent);
 	 	std::cout << "params: " << std::endl;
-		for(const std::unique_ptr<DeclarationNode>& param : params){
+		/*
+		for(const std::unique_ptr<VarDeclaration>& param : params){
  			param->printNode(indent+1);
    		}
+		*/
 
 		std::cout << "stmts: " << std::endl;
 		for(const std::unique_ptr<ASTNode>& stmt : statements){
   			stmt->printNode(indent+1);
    		}
 	}
+
+	Type getType(){
+    	return returnType;
+    }
+
+	//std::vector<std::unique_ptr<VarDeclaration>>& getArgs(){
+		//return params;
+	//}
+	
+    std::string getValue() const {
+   		return functionName;
+    }
 };

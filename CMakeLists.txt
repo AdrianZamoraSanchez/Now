@@ -34,16 +34,15 @@ target_link_libraries(NowCompiler antlr4-runtime)
 # LLVM
 find_package(LLVM REQUIRED CONFIG)
 
-#message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-#message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 target_link_libraries(NowCompiler
-        antlr4-runtime
-        LLVMCore
-        LLVMSupport
+    antlr4-runtime
+    LLVMCore
+    LLVMSupport
+    gvc
+    cgraph
 )
 
 # Fuentes principales de la app
@@ -67,6 +66,8 @@ target_link_libraries(NowApp
     antlr4-runtime
     LLVMCore
     LLVMSupport
+    gvc
+    cgraph
 )
 
 # -------------------
@@ -112,6 +113,8 @@ target_link_libraries(NowRun_AST
     antlr4-runtime
     LLVMCore
     LLVMSupport
+    gvc
+    cgraph
 )
 
 target_include_directories(NowRun_AST PRIVATE
@@ -140,6 +143,8 @@ target_link_libraries(NowTests
     now
     gtest
     gtest_main
+    gvc
+    cgraph
 )
 
 include(GoogleTest)

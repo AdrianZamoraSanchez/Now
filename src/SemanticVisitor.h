@@ -11,13 +11,15 @@ public:
 
 	// New Scope or changes in the scope/symbol table
 	Scope visit(DeclarationNode* node);
-	Scope visit(AssignNode* node);
-
-	Scope visit(TimeBlockNode* node);
-	Scope visit(ConditionalNode* node);
 	Scope visit(FunctionNode* node);
+	
+	Scope visit(TimeBlockNode* node);
 
 	// Type checking 
-    Scope visit(BinaryExprNode* node);
-	Scope visit(ComparisonNode* node);
+    void visit(BinaryExprNode* node);
+	void visit(ComparisonNode* node);
+
+	// IDs existence check
+	void visit(AssignNode* node);
+	void visit(ConditionalNode* node);
 };

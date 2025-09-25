@@ -55,6 +55,7 @@ expr
   : expr op=(MUL|DIV) expr		# mulDivExpr
   | expr op=(PLUS|MINUS) expr	# addSubExpr
   | NUMBER_LITERAL				# numExpr
+  | IDENTIFIER					# variableExpr
   | LPAREN expr RPAREN			# parenExpr
   ;
 

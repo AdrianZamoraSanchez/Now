@@ -1,10 +1,51 @@
 #pragma once
 #include "AST.h"
+#include "../grammar/NowLexer.h"
 #include "../grammar/NowParser.h"
 #include <memory>
+#include <graphviz/gvc.h>
+#include <graphviz/cgraph.h>
 
 class ASTBuilderVisitor {
 public:
+    GVC_t* gvc;
+    Agraph_t* g;
+    int nextId;
+
+    ASTBuilderVisitor() {
+        gvc = gvContext();
+        g = agopen((char*)"AST", Agdirected, 0);
+        nextId = 0;
+    }
+
+    ~ASTBuilderVisitor() {
+        saveGraph("AST.png");
+        gvFreeLayout(gvc, g);
+        agclose(g);
+        gvFreeContext(gvc);
+    }
+
+    /* AST visual graph generation */
+    void saveGraph(const std::string& filename) {
+        std::cout << "Generated the file: " << filename << std::endl;
+        gvLayout(gvc, g, "dot");
+        gvRenderFilename(gvc, g, "png", filename.c_str());
+    }
+
+    std::string addGraphNode(const std::string& label) {
+        std::string id = "node" + std::to_string(nextId++);
+        std::cout << "Node " << id << " - " << label << std::endl;
+        Agnode_t* n = agnode(g, (char*)id.c_str(), 1);
+        agset(n, (char*)"label", (char*)label.c_str());
+        return id;
+    }
+
+    void addGraphEdge(const std::string& from, const std::string& to) {
+        std::cout << "Edge from " << from << " - " << to << std::endl;
+        agedge(g, agnode(g, (char*)from.c_str(), 0), agnode(g, (char*)to.c_str(), 0), 0, 1);
+    }
+
+    /* Node generation */
 	std::vector<std::unique_ptr<ASTNode>> buildTree(NowParser::ProgramContext* ctx);
     std::unique_ptr<ASTNode> visitProgram(NowParser::ProgramContext* ctx);
     std::unique_ptr<ASTNode> visitAssign(NowParser::AssignContext* ctx);
@@ -28,5 +69,5 @@ public:
     std::vector<std::unique_ptr<DeclarationNode>> visitParams(NowParser::ParamListContext* ctx);
 
     std::unique_ptr<ASTNode> visitStmt(NowParser::StmtContext* stmtCtx);
-    std::vector<std::unique_ptr<ASTNode>> visitStmtList(const std::vector<NowParser::StmtContext*>& stmts);
+    std::vector<std::unique_ptr<ASTNode>> visitStmtList(const std::vector<NowParser::StmtContext*>& stmts, std::string fatherId);
 };

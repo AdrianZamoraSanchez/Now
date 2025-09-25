@@ -1,0 +1,9 @@
+digraph AST {
+  node0 [label="ASSIGN: a"];
+  node1 [label="BINARY: +"];
+  node2 [label="INT: 5"];
+  node1 -> node2;
+  node3 [label="INT: 3"];
+  node1 -> node3;
+  node0 -> node1;
+}

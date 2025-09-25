@@ -6,20 +6,12 @@
 #include <memory>
 #include "Type.h"
 
+// OOP methodology for expansibility, in the future I might include structs, enums, objects, etc.
+
 /* Declarations */
 class Declaration {
 public:
     virtual ~Declaration() = 0;
-};
-
-// Function declaration
-class FuncDeclaration : public Declaration {
-    std::string name;
-    std::vector<std::pair<std::string, Type>> arguments;
-public:
-    ~FuncDeclaration() override;
-    FuncDeclaration(const std::string funcName,
-                    const std::vector<std::pair<std::string, Type>>& funcArguments);
 };
 
 // Variable declaration
@@ -29,6 +21,19 @@ class VarDeclaration : public Declaration {
 public:
     ~VarDeclaration() override;
     VarDeclaration(const std::string varName, const Type& varType);
+};
+
+
+// Function declaration
+class FuncDeclaration : public Declaration {
+    std::string name;
+    Type type;
+    std::vector<VarDeclaration> arguments;
+public:
+    ~FuncDeclaration() override;
+    FuncDeclaration(const std::string funcName,
+                    const Type funcType,
+                    const std::vector<VarDeclaration>& funcArguments);
 };
 
 

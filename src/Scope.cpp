@@ -14,8 +14,9 @@ FuncDeclaration::~FuncDeclaration() = default;
 
 FuncDeclaration::FuncDeclaration(
     const std::string funcName,
-    const std::vector<std::pair<std::string, Type>>& funcArguments
-) : name(funcName), arguments(funcArguments) {}
+    const Type funcType,
+    const std::vector<VarDeclaration>& funcArguments
+) : name(funcName), type(funcType), arguments(funcArguments) {}
 
 // Variable declaration
 VarDeclaration::~VarDeclaration() = default;
