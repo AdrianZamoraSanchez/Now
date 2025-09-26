@@ -338,17 +338,18 @@ std::unique_ptr<ASTNode> ASTBuilderVisitor::visitStmt(NowParser::StmtContext* st
 // STMT list
 std::vector<std::unique_ptr<ASTNode>> ASTBuilderVisitor::visitStmtList(const std::vector<NowParser::StmtContext*>& stmts, std::string fatherId) {
     std::vector<std::unique_ptr<ASTNode>> result;
-
+	std::cerr << "visitStmtList: size=" << stmts.size() << std::endl;
     for (auto* stmt : stmts) {
 		int childId = this->nextId;
 		auto node = visitStmt(stmt);
         if (node) {
-
+			std::cerr << " -> visiting stmt" << std::endl;
             addGraphEdge(fatherId ,
                          "node" + std::to_string(childId));
             result.push_back(std::move(node));
         }
     }
 
+	std::cerr << "visitStmtList end" << std::endl;
     return result;
 }

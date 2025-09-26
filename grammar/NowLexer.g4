@@ -76,3 +76,4 @@ STRING_LITERAL : '"' LETTER+ '"' ;
 COMMNET : '//' ~[\r\n]* -> skip ;
 NEWLINE : [\r\n]+ -> skip ;
 WS      : [ \t]+ -> skip ;
+

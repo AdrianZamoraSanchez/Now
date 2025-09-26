@@ -1,4 +1,3 @@
 2sec {
 	int number = 2;
-	string word = "time";
 }

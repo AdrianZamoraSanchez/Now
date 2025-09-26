@@ -1,4 +1,3 @@
 int function(int number, char letter){
 	int declaration = 2;
-	string anotherDeclaration = "si";
-};
+}

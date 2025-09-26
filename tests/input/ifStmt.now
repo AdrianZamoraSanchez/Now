@@ -1,7 +1,3 @@
 if (2 < 3) {
-	int number = 3 ;	
-
-	char alphaNumeric;
-
-	alphaNumeric = number;
+	int number = 3 ;
 }

@@ -5,6 +5,8 @@
 #include "NowParser.h"
 #include "ios"
 #include "ASTBuilderVisitor.h"
+#include "LexerErrorListener.h"
+#include "ParserErrorListener.h"
 
 using namespace antlr4;
 
@@ -31,9 +33,15 @@ int main(int argc, char *argv[]){
 	std::cout << "Text being analyzed" << std::endl;
 	std::cout << fileText << std::endl;
 
-	// Compilation pocess
+	/* Compilation pocess */
+
+	// Lexical analysis
 	ANTLRInputStream input(fileText);
 	NowLexer lexer(&input);
+
+	lexer.removeErrorListeners();
+	lexer.addErrorListener(new LexerErrorListener()); // Adding a modified error listener
+
 	CommonTokenStream tokens(&lexer);
 
 	tokens.fill();
@@ -41,13 +49,16 @@ int main(int argc, char *argv[]){
 	    std::cout << token->toString() << std::endl;
 	}	
 	
-	// Extraction of the program context
+	// Parsing process
 	NowParser parser(&tokens);
+
+	parser.removeErrorListeners();
+	parser.addErrorListener(new ParserErrorListener()); // Adding a modified error listener
+
 	NowParser::ProgramContext* tree = parser.program();
 
 	// AST building process
 	ASTBuilderVisitor builder;
-	
 	std::vector<std::unique_ptr<ASTNode>> nodes = builder.buildTree(tree);
 
 	// TODO SemanticVisitor semanticVisitor
